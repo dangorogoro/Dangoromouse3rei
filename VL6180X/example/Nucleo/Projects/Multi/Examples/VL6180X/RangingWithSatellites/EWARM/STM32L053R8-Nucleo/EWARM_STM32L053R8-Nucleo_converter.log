@@ -1,0 +1,7 @@
+Project: EWARM_STM32L053R8-Nucleo
+Converter: IARProjectParser
+Date: 20190901
+
+Project needs GCC compatible startup code and linker script
+NucleoL053RangingAndALS Configuration: ATTENTION: Failed to determine FPU core for the device: DeviceInfo [vendorName=STMicroelectronics, mcuName=STM32L053x8], MCU information uncertain.
+NucleoL053RangingAndALS Configuration: FPU set to none.

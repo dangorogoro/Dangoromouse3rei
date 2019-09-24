@@ -1,0 +1,7 @@
+Project: EWARM_STM32F401RE-Nucleo
+Converter: IARProjectParser
+Date: 20190901
+
+Project needs GCC compatible startup code and linker script
+STM32F401Nucleo-VL6180X Configuration: ATTENTION: Failed to determine FPU core for the device: DeviceInfo [vendorName=STMicroelectronics, mcuName=STM32F401xE], MCU information uncertain.
+STM32F401Nucleo-VL6180X Configuration: ATTENTION: Failed to determine FPU core for the device: DeviceInfo [vendorName=STMicroelectronics, mcuName=STM32F401xE], MCU information uncertain.

@@ -1,0 +1,7 @@
+Project: STM32L476RG-Nucleo
+Converter: IARProjectParser
+Date: 20190901
+
+Project needs GCC compatible startup code and linker script
+STM32L476RG-Nucleo Configuration: FPU set to default FPU for device: FPv4-SP-D16.
+STM32L476RG-Nucleo Configuration: FPU set to default FPU for device: FPv4-SP-D16.
