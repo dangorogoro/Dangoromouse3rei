@@ -43,6 +43,13 @@ extern "C" {
 #include "ir_led.h"
 #include "config.h"
 #include "motor.h"
+
+#include "FreeRTOS.h"
+#include "timers.h"
+#include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "list.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

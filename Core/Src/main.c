@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -57,7 +56,6 @@ TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim6;
 TIM_HandleTypeDef htim11;
 
-osThreadId_t default_taskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -75,12 +73,11 @@ static void MX_TIM5_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM11_Init(void);
 static void MX_TIM2_Init(void);
-void StartDefaultTask(void *argument); // for v2
-
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
-enum{ ADC_BUFFER_LENGTH = 3 };
-uint16_t g_ADCBuffer[ADC_BUFFER_LENGTH];
+enum{ ADC_BUFFER_LENGTH = 3};
+volatile uint16_t g_ADCBuffer[ADC_BUFFER_LENGTH];
+volatile uint16_t sampled_ADCBuffer[ADC_BUFFER_LENGTH];
 uint32_t time_measure = 0;
 uint16_t left_IR_value = 0, right_IR_value = 0;
 uint16_t left_IR_tmp_value = 0, right_IR_tmp_value = 0;
@@ -90,19 +87,31 @@ int16_t left_encoder, right_encoder;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-#if 0
-HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
+void vLEDFlashTask( void *pvParameters )
 {
+  portTickType xLastWakeTime;
+  const portTickType xFrequency = 1000;
+  xLastWakeTime=xTaskGetTickCount();
+  while(1){
+  	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+  	HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_0);
+  	vTaskDelayUntil(&xLastWakeTime,xFrequency);
+  	printf("ADC %d, %d, %d\n", g_ADCBuffer[0], g_ADCBuffer[1], g_ADCBuffer[2]);
+  }
+}
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	//osMessageQueuePut(myQueue01Handle, g_ADCBuffer, 0, 0);
+	//HAL_ADC_Stop_DMA(&hadc1);
+	//sampled_ADCBuffer[0] = g_ADCBuffer[0];
+	//sampled_ADCBuffer[1] = g_ADCBuffer[1];
+	//sampled_ADCBuffer[2] = g_ADCBuffer[2];
   /* Prevent unused argument(s) compilation warning */
-	printf("ADC CH1 Value is %d\r\n", g_ADCBuffer[0]);
-	printf("ADC CH2 Value is %d\r\n", g_ADCBuffer[1]);
-	printf("ADC CH3 Value is %d\r\n", g_ADCBuffer[2]);
+  //HAL_ADC_Start_DMA(&hadc1, g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
   /* NOTE : This function should not be modified. When the callback is needed,
             function HAL_ADC_ConvHalfCpltCallback must be implemented in the user file.
   */
 }
-#endif
 /* USER CODE END 0 */
 
 /**
@@ -147,8 +156,11 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(500);
   HAL_ADC_Start_DMA(&hadc1, g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
+  HAL_Delay(500);
 
+#if 0
   HAL_TIM_Base_Start_IT(&htim2); //control sequence
   //start_motor();
   HAL_Delay(1000);
@@ -177,47 +189,13 @@ int main(void)
   Sample_SimpleRanging();
   //Sample_SimpleAls();
   HAL_Delay(600);
-
+#endif
   /* USER CODE END 2 */
-
-  osKernelInitialize(); // Initialize CMSIS-RTOS
-
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
-
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* definition and creation of default_task */
-  const osThreadAttr_t default_task_attributes = {
-    .name = "default_task",
-    .priority = (osPriority_t) osPriorityHigh6,
-    .stack_size = 128
-  };
-  default_taskHandle = osThreadNew(StartDefaultTask, NULL, &default_task_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-  /* Start scheduler */
-  osKernelStart();
-  
-  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  xTaskCreate( vLEDFlashTask, ( signed char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  vTaskStartScheduler();
   while (1)
   {
     /* USER CODE END WHILE */
@@ -321,7 +299,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_112CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_84CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -787,28 +765,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
-
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the default_task thread.
-  * @param  argument: Not used 
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-	float32_t in = 3, out = 0;
-	arm_sqrt_f32(in, &out);
-	uint32_t data = 0;
-  for(;;){
-  	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
-    osDelay(100);
-  }
-  /* USER CODE END 5 */ 
-}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
