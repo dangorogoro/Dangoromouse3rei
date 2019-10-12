@@ -76,8 +76,8 @@ static void MX_TIM2_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 enum{ ADC_BUFFER_LENGTH = 3};
-volatile uint16_t g_ADCBuffer[ADC_BUFFER_LENGTH];
-volatile uint16_t sampled_ADCBuffer[ADC_BUFFER_LENGTH];
+uint32_t g_ADCBuffer[ADC_BUFFER_LENGTH];
+uint32_t sampled_ADCBuffer[ADC_BUFFER_LENGTH];
 uint32_t time_measure = 0;
 uint16_t left_IR_value = 0, right_IR_value = 0;
 uint16_t left_IR_tmp_value = 0, right_IR_tmp_value = 0;
@@ -194,7 +194,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  xTaskCreate( vLEDFlashTask, ( signed char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   vTaskStartScheduler();
   while (1)
   {
@@ -694,6 +694,7 @@ static void MX_TIM11_Init(void)
   */
 static void MX_DMA_Init(void) 
 {
+
   /* DMA controller clock enable */
   __HAL_RCC_DMA2_CLK_ENABLE();
 

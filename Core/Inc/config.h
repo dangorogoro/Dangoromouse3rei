@@ -19,7 +19,7 @@ typedef struct{
 extern Flag robotFlag;
 extern uint16_t left_IR_value, right_IR_value;
 extern uint16_t left_IR_tmp_value, right_IR_tmp_value;
-extern volatile uint16_t g_ADCBuffer[];
+extern uint32_t g_ADCBuffer[];
 
 extern uint8_t mode_select();
 extern void debug_task();
