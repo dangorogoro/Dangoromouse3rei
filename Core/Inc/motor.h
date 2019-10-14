@@ -13,5 +13,4 @@ void set_right_motor_pulse(int16_t right_pulse);
 void set_motor_pulse(int16_t left_pulse, int16_t right_pulse);
 void start_motor();
 void stop_motor();
-#define CIRC_LEN (15 * PI)
 #endif /* INC_MOTOR_H_ */

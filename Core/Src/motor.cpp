@@ -84,7 +84,7 @@ void motor_control_init(){
 	TIM3->CNT = 0;
 	TIM4->CNT = 0;
 }
-
+#if 0
 void motor_task(float32_t left_target_velocity, float32_t right_target_velocity){
 	if(robotFlag.encoder == true){
 		float32_t left_velocity = TIM4->CNT / 1024 * CIRC_LEN * 1000;
@@ -99,3 +99,4 @@ void motor_task(float32_t left_target_velocity, float32_t right_target_velocity)
 		robotFlag.encoder = false;
 	}
 }
+#endif
