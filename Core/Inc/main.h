@@ -22,34 +22,22 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
+#include "stm32f4xx_hal.h"
 
 #ifdef __cplusplus
+#include "config.h"
+#include "my_vl6180x.h"
+#include "spi.h"
+#include "ir_led.h"
+#include "motor.h"
+#include "motion_observer.h"
 extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f4xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "SEGGER_RTT.h"
-#include <stdbool.h>
-#include <stdio.h>
-#define ARM_MATH_CM4
-#include "arm_math.h"
-#include <string.h>
-#include "my_vl6180x.h"
-#include "spi.h"
-#include "ir_led.h"
-#include "config.h"
-#include "motor.h"
-
-#include "FreeRTOS.h"
-#include "timers.h"
-#include "task.h"
-#include "semphr.h"
-#include "queue.h"
-#include "list.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
