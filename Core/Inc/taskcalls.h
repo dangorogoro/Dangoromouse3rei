@@ -8,7 +8,7 @@
 #ifndef INC_TASKCALLS_H_
 #define INC_TASKCALLS_H_
 
-#include "main.h"
+#include "config.h"
 void vApplicationMallocFailedHook();
 /* スタックがオーバーフローしたときのHook */
 void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);

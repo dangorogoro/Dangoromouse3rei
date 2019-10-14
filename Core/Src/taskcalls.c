@@ -30,7 +30,7 @@ void vApplicationTickHook(){
 void vApplicationIdleHook(){
 	static uint32_t idle_tick_cnt = 0;
 	++idle_tick_cnt;
-	if ( idle_tick_cnt >= ((portTickType)5000/portTICK_RATE_MS));
+//	if ( idle_tick_cnt >= ((portTickType)5000/portTICK_RATE_MS));
 }
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
 implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
