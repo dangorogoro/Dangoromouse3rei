@@ -76,8 +76,8 @@ static void MX_TIM2_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 enum{ ADC_BUFFER_LENGTH = 3};
-uint32_t g_ADCBuffer[ADC_BUFFER_LENGTH];
-uint32_t sampled_ADCBuffer[ADC_BUFFER_LENGTH];
+uint16_t g_ADCBuffer[ADC_BUFFER_LENGTH];
+uint16_t sampled_ADCBuffer[ADC_BUFFER_LENGTH];
 uint32_t time_measure = 0;
 uint16_t left_IR_value = 0, right_IR_value = 0;
 uint16_t left_IR_tmp_value = 0, right_IR_tmp_value = 0;
@@ -87,8 +87,19 @@ int16_t left_encoder, right_encoder;
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void helloTask(void *pvParameters){
+  portTickType xLastWakeTime;
+  const portTickType xFrequency = 500;
+  xLastWakeTime=xTaskGetTickCount();
+  while(1){
+  	printf("hello\n");
+  	vTaskDelayUntil(&xLastWakeTime,xFrequency);
+  }
+
+}
 void vLEDFlashTask( void *pvParameters )
 {
+
   portTickType xLastWakeTime;
   const portTickType xFrequency = 1000;
   xLastWakeTime=xTaskGetTickCount();
@@ -96,7 +107,6 @@ void vLEDFlashTask( void *pvParameters )
   	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
   	HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_0);
   	vTaskDelayUntil(&xLastWakeTime,xFrequency);
-  	printf("ADC %d, %d, %d\n", g_ADCBuffer[0], g_ADCBuffer[1], g_ADCBuffer[2]);
   }
 }
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
@@ -155,11 +165,25 @@ int main(void)
 
   /* Initialize interrupts */
   MX_NVIC_Init();
+  imuSetting();
+  imuPing();
+  HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);// left encoder
+  HAL_TIM_Encoder_Start(&htim4,TIM_CHANNEL_ALL);// right encoder
   /* USER CODE BEGIN 2 */
   HAL_Delay(500);
-  HAL_ADC_Start_DMA(&hadc1, g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
+  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
   HAL_Delay(500);
 
+  /*
+  ICM20602 po;
+  Encoder enc;
+  while(1){
+  	HAL_Delay(100);
+  	auto observed_gyro = po.update();
+  	enc.update();
+		printf("gyro %f %f\n", observed_gyro.x_accel, observed_gyro.z_gyro);
+  }
+  */
 #if 0
   HAL_TIM_Base_Start_IT(&htim2); //control sequence
   //start_motor();
@@ -194,7 +218,12 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  MotionObserver motion_observer;
+  motion_observer.init();
+  motion_observer.createTask((const char*)"MOTION", 2048, 2);
+  //motion_observer.create_task();
   xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
   vTaskStartScheduler();
   while (1)
   {
@@ -256,7 +285,7 @@ void SystemClock_Config(void)
 static void MX_NVIC_Init(void)
 {
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 14, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 }
 
