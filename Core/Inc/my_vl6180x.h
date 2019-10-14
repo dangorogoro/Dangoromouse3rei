@@ -7,9 +7,8 @@
 
 #ifndef INC_MY_VL6180X_H_
 #define INC_MY_VL6180X_H_
-#include "main.h"
+#include "config.h"
 #include "vl6180x_api.h"
-extern I2C_HandleTypeDef hi2c3;
 #define i2c_bus      (&hi2c3)
 #define def_i2c_time_out 1000
 

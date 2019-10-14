@@ -52,63 +52,63 @@ void ToF_sampling_test(){
   VL6180x_RangeData_t Range;
   HAL_Delay(100);
   /*
-  SET_VL6180X_FRONT_GPIO0(SET);
+  SET_VL6180X_FRONT_GPIO0(GPIO_PIN_SET);
   HAL_Delay(100);
   VL6180x_InitData(myDev);
   VL6180x_Prepare(myDev);
   SET_VL6180X_FRONT_GPIO0(RESET);
 
-  SET_VL6180X_LEFT_GPIO0(SET);
+  SET_VL6180X_LEFT_GPIO0(GPIO_PIN_SET);
   HAL_Delay(100);
   VL6180x_InitData(myDev);
   VL6180x_Prepare(myDev);
   SET_VL6180X_LEFT_GPIO0(RESET);
 
-  SET_VL6180X_RIGHT_GPIO0(SET);
+  SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_SET);
   HAL_Delay(100);
   VL6180x_InitData(myDev);
   VL6180x_Prepare(myDev);
   SET_VL6180X_RIGHT_GPIO0(RESET);
 	*/
   while(1){
-    SET_VL6180X_FRONT_GPIO0(SET);
+    SET_VL6180X_FRONT_GPIO0(GPIO_PIN_SET);
     HAL_Delay(1);
     VL6180x_InitData(myDev);
     VL6180x_Prepare(myDev);
   	VL6180x_RangePollMeasurement(myDev, &Range);
-    SET_VL6180X_FRONT_GPIO0(RESET);
+    SET_VL6180X_FRONT_GPIO0(GPIO_PIN_RESET);
     HAL_Delay(10);
     if (Range.errorStatus == 0 && Range.range_mm >= 70 && Range.range_mm <= 120){
-    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, RESET);
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_RESET);
     	printf("FRONT Vaule %d mm\n", (int)Range.range_mm);
     }
-    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, SET);
+    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_SET);
 
-    SET_VL6180X_LEFT_GPIO0(SET);
+    SET_VL6180X_LEFT_GPIO0(GPIO_PIN_SET);
     HAL_Delay(1);
     VL6180x_InitData(myDev);
     VL6180x_Prepare(myDev);
   	VL6180x_RangePollMeasurement(myDev, &Range);
-    SET_VL6180X_LEFT_GPIO0(RESET);
+    SET_VL6180X_LEFT_GPIO0(GPIO_PIN_RESET);
     HAL_Delay(10);
     if (Range.errorStatus == 0 && Range.range_mm >= 25 && Range.range_mm <= 60){
     	printf("LEFT Vaule %d mm\n", (int)Range.range_mm);
-    	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, RESET);
+    	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
     }
-    else	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, SET);
+    else	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_SET);
 
-    SET_VL6180X_RIGHT_GPIO0(SET);
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_SET);
     HAL_Delay(1);
     VL6180x_InitData(myDev);
     VL6180x_Prepare(myDev);
   	VL6180x_RangePollMeasurement(myDev, &Range);
-    SET_VL6180X_RIGHT_GPIO0(RESET);
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_RESET);
     HAL_Delay(10);
     if (Range.errorStatus == 0 && Range.range_mm >= 25 && Range.range_mm <= 60){
-    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, RESET);
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
     	printf("RIGHT Vaule %d mm\n", (int)Range.range_mm);
     }
-    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, SET);
+    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
   }
 
 }
@@ -118,7 +118,7 @@ void Sample_SimpleRanging(void) {
   VL6180x_RangeData_t Range;
   //SET_VL6180X_FRONT_GPIO0(RESET);
   HAL_Delay(100);
-  SET_VL6180X_FRONT_GPIO0(SET);
+  SET_VL6180X_FRONT_GPIO0(GPIO_PIN_SET);
   HAL_Delay(100);
   VL6180x_InitData(myDev);
   VL6180x_Prepare(myDev);
@@ -142,7 +142,7 @@ void Sample_SimpleRanging(void) {
 void Sample_FreeRunningRanging(void) {
     VL6180xDev_t myDev = 0x52;
     VL6180x_RangeData_t Range;
-    SET_VL6180X_RIGHT_GPIO0(SET);
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_SET);
     HAL_Delay(100);
     VL6180x_InitData(myDev);
     VL6180x_Prepare(myDev);
@@ -185,7 +185,7 @@ void Sample_SimpleAls(void) {
     VL6180xDev_t myDev = 0x52;
     VL6180x_AlsData_t Als;
 
-    SET_VL6180X_FRONT_GPIO0(SET);
+    SET_VL6180X_FRONT_GPIO0(GPIO_PIN_SET);
     HAL_Delay(100);
     VL6180x_InitData(myDev);
     VL6180x_Prepare(myDev);
