@@ -5,9 +5,8 @@
  *      Author: dango
  */
 
-
 #include "config.h"
-#include "arm_math.h"
+#include "spi.h"
 Flag robotFlag = {false};
 /*
 left_encoder = TIM3->CNT;
@@ -29,12 +28,12 @@ uint8_t mode_select(){
     mode = right_encoder >> 7;
     int16_t X_accel = readXAccel();
     reference_accel = reference_accel * 2 / 3 + X_accel / 3;
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13| GPIO_PIN_14| GPIO_PIN_15, SET);
-    HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, SET);
-    if(mode & 0x01)	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, RESET);
-    if(mode & 0x02)	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, RESET);
-    if(mode & 0x04)	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, RESET);
-    if(mode & 0x08)	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, RESET);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13| GPIO_PIN_14| GPIO_PIN_15, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
+    if(mode & 0x01)	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+    if(mode & 0x02)	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+    if(mode & 0x04)	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+    if(mode & 0x08)	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
     SEGGER_RTT_printf(0, "Z Gyro %d X Accel %d\n",readZGYRO(), readXAccel());
     SEGGER_RTT_printf(0, "Encoder->%d   %d\n",left_encoder, right_encoder);
     if(reference_accel - X_accel > 2000){
@@ -45,8 +44,8 @@ uint8_t mode_select(){
     	HAL_TIM_Base_Start_IT(&htim6); // buzzer
     	HAL_Delay(250);
     	HAL_TIM_Base_Stop_IT(&htim6); // buzzer
-    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13| GPIO_PIN_14| GPIO_PIN_15, SET);
-    	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, SET);
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13| GPIO_PIN_14| GPIO_PIN_15, GPIO_PIN_SET);
+    	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_SET);
     	reference_accel = readXAccel();
     	flag = true;
     }
