@@ -1,45 +1,58 @@
 #include "spi.h"
-int16_t gyro_offset = 0;
+int16_t gyro_offset = GPIO_PIN_RESET;
+
 void imuSetting(){
-  writeReg(0x6B,0x80);
+  spi_write_reg(ICM20602_PWR_MGMT_1, 0x80);
   HAL_Delay(100);
-  writeReg(0x6B,0x00);
+  spi_write_reg(ICM20602_PWR_MGMT_1, 0x00);
   HAL_Delay(100);
-  writeReg(0x1A,0x00);
+  spi_write_reg(ICM20602_CONFIG, 0x00);
   HAL_Delay(100);
-  writeReg(0x1B,0x18);
+  spi_write_reg(ICM20602_GYRO_CONFIG, 0x18); //+-2000dps
+  HAL_Delay(100);
+  spi_write_reg(ICM20602_ACCEL_CONFIG, 0x00); //+-2g
+  HAL_Delay(100);
+  spi_write_reg(ICM20602_ACCEL_CONFIG2, 0x08); //lowpass 1kHz
   HAL_Delay(100);
 }
 int16_t readXAccel(){
-	  int16_t data;
-	  data = (int16_t)(((uint16_t)readReg(0x3B)<<8) | ((uint16_t)readReg(0x3C)));
-	  return data;
+	int16_t data;
+  uint8_t buffer[2];
+  spi_read_reg(ICM20602_ACCEL_XOUT_H, buffer, 2);
+  data = (int16_t)(((uint16_t)buffer[0] << 8) | ((uint16_t)buffer[1]));
+  return data;
 }
 int16_t readZGYRO(){
   int16_t data;
-  data = (int16_t)(((uint16_t)readReg(0x47)<<8) | ((uint16_t)readReg(0x48)));
+  uint8_t buffer[2];
+  spi_read_reg(ICM20602_GYRO_ZOUT_H, buffer, 2);
+  data = (int16_t)(((uint16_t)buffer[0] << 8) | ((uint16_t)buffer[1]));
   return data;
 }
-uint8_t readReg(uint8_t reg){
-  uint8_t data;
-  uint8_t address = reg | 0x80;
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 0);
-  HAL_SPI_Transmit(&hspi2, &address, 1, 1000);
-  HAL_SPI_Receive(&hspi2, &data, 1, 1000);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
-  return data;
+void spi_read_reg(uint8_t reg, uint8_t* buffer, size_t size){
+	uint8_t send_data[size+1];
+	uint8_t receive_data[size+1];
+  send_data[0] = reg | 0x80;
+  SPI_CHIP_SELECT(GPIO_PIN_RESET);
+  for(size_t i = 0; i < size + 1; i++){
+    HAL_SPI_TransmitReceive(&hspi2, &send_data[i], &receive_data[i], 1, 1000);
+  }
+	memcpy(buffer, receive_data+1, size);
+  SPI_CHIP_SELECT(GPIO_PIN_SET);
 }
-void writeReg(uint8_t reg, uint8_t data){
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 0);
+void spi_write_reg(uint8_t reg, uint8_t data){
+  SPI_CHIP_SELECT(GPIO_PIN_RESET);
   HAL_SPI_Transmit(&hspi2, &reg, 1, 1000);
   HAL_SPI_Transmit(&hspi2, &data, 1, 1000);
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
+  SPI_CHIP_SELECT(GPIO_PIN_SET);
 }
 void imuPing(){
-  SEGGER_RTT_printf(0, "%d\n",readReg(0x75));
+	uint8_t data;
+	spi_read_reg(0x75, &data, 1);
+  SEGGER_RTT_printf(0, "%d\n", data);
 }
 void imu_calibration(){
-	float32_t tmp = 0;
+	float32_t tmp = GPIO_PIN_RESET;
 	for(int i = 0; i < 1000; i++){
 		tmp += readZGYRO();
 		HAL_Delay(1);
@@ -47,13 +60,44 @@ void imu_calibration(){
 	tmp /= 1000.0;
 	gyro_offset = (int16_t)tmp;
 }
-#if 0
-void gyro_task(float32_t* degree){
-	float32_t add_deg = 0;
-	if(robotFlag.gyro == true){
-		add_deg = (float32_t)(readZGYRO() - gyro_offset) / 16.4 / 1000.0;
-		robotFlag.gyro = false;
-	}
-	*degree += add_deg;
+
+void spi_transfer(uint8_t& address, uint8_t& data){
+	address |= 0x80;
+  HAL_SPI_Transmit(&hspi2, &address, 1, 1000);
+  HAL_SPI_Receive(&hspi2, &data, 1, 1000);
 }
-#endif
+void get_all_data(GyroData& data){
+	uint8_t buf[14];
+  uint8_t address;
+  address = ICM20602_ACCEL_XOUT_H | 0x80;
+  spi_read_reg(address, buf, 14);
+  data.x_accel = (int16_t)(((uint16_t)buf[0] << 8)
+  		| ((uint16_t)buf[1])) / ACCEL_FACTOR;
+  data.y_accel = (int16_t)(((uint16_t)buf[2] << 8)
+  		| ((uint16_t)buf[3])) / ACCEL_FACTOR;
+  data.z_accel = (int16_t)(((uint16_t)buf[4] << 8)
+  		| ((uint16_t)buf[5])) / ACCEL_FACTOR;
+
+  data.x_gyro = (int16_t)(((uint16_t)buf[8] << 8)
+  		| ((uint16_t)buf[9])) / GYRO_FACTOR;
+  data.y_gyro = (int16_t)(((uint16_t)buf[10] << 8)
+  		| ((uint16_t)buf[11])) / GYRO_FACTOR;
+  data.z_gyro = (int16_t)(((uint16_t)buf[12] << 8)
+  		| ((uint16_t)buf[13])) / GYRO_FACTOR;
+
+}
+void ICM20602::setCalibration(){
+	GyroData sumData;
+	for(int i = 0; i < 1000; i++){
+		GyroData tmpData;
+		get_all_data(tmpData);
+		sumData = sumData + tmpData;
+	}
+	offset_data = sumData / 1000.0;
+}
+GyroData ICM20602::update(){
+	GyroData get_data;
+	get_all_data(get_data);
+  return get_data * 1000.0;// - offset_data;
+}
+
