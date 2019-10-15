@@ -36,9 +36,9 @@ extern uint16_t left_IR_value, right_IR_value;
 extern uint16_t left_IR_tmp_value, right_IR_tmp_value;
 extern uint16_t g_ADCBuffer[];
 
+extern xQueueHandle IRSensorQueue;
 extern uint8_t mode_select();
 extern void debug_task();
-
 extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_adc1;
 
@@ -52,4 +52,5 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim11;
+void vPrintString( const char *pcString );
 #endif /* INC_CONFIG_H_ */
