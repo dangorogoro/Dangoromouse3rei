@@ -82,6 +82,8 @@ uint32_t time_measure = 0;
 uint16_t left_IR_value = 0, right_IR_value = 0;
 uint16_t left_IR_tmp_value = 0, right_IR_tmp_value = 0;
 int16_t left_encoder, right_encoder;
+xQueueHandle IRSensorQueue = xQueueCreate(1, sizeof(IRUnit));
+QueueHandle_t xQueue;
 
 /* USER CODE END PFP */
 
@@ -89,23 +91,47 @@ int16_t left_encoder, right_encoder;
 /* USER CODE BEGIN 0 */
 void helloTask(void *pvParameters){
   portTickType xLastWakeTime;
-  const portTickType xFrequency = 500;
+  const portTickType xFrequency = 10 * 1000;
+  IRUnit IRBuffer(0,0);
+  uint32_t data;
   xLastWakeTime=xTaskGetTickCount();
   while(1){
   	printf("hello\n");
+  	if(xQueueReceive(IRSensorQueue, &IRBuffer, ( TickType_t ) 10 ) ){
+    	printf("ir received \n");
+    	if(IRBuffer.left_ir_sensor > 2150)
+      	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+    	else
+      	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+    	if(IRBuffer.right_ir_sensor > 2150)
+      	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+    	else
+      	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+    }
+
+  	/*
+  	if(xQueueReceive(xQueue, &data, 0)){
+  		auto poi = data;
+  		printf("poi is \n");
+  	}
+  	*/
   	vTaskDelayUntil(&xLastWakeTime,xFrequency);
   }
 
 }
-void vLEDFlashTask( void *pvParameters )
-{
-
+void vLEDFlashTask( void *pvParameters ){
+	IRUnit po(1234, 2345);
   portTickType xLastWakeTime;
-  const portTickType xFrequency = 1000;
+  const portTickType xFrequency = 50 * 1000;
   xLastWakeTime=xTaskGetTickCount();
+  uint32_t count = 0;
+  for(auto i = 0; i <= 10;i++){
+  	xQueueSendToBack(xQueue, &i, 0);
+  }
   while(1){
   	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
   	HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_0);
+		//xQueueSendToBack(IRSensorQueue, (void*) &po, 0);
   	vTaskDelayUntil(&xLastWakeTime,xFrequency);
   }
 }
@@ -175,6 +201,12 @@ int main(void)
   HAL_Delay(500);
 
   /*
+  IR_start();
+  while(1){
+  	printf("%d %d\n", g_ADCBuffer[0], g_ADCBuffer[1]);
+  			HAL_Delay(10);
+  }
+  /*
   ICM20602 po;
   Encoder enc;
   while(1){
@@ -194,6 +226,8 @@ int main(void)
   IR_start();
   imuSetting();
   imuPing();
+
+  /*
   while(1){
   	//IR_task();
   	printf("CNT3 -> %d CNT4 -> %d\n",TIM3->CNT, TIM4->CNT);
@@ -203,7 +237,6 @@ int main(void)
     ToF_sampling_test();
   	HAL_Delay(10);
   }
-  /*
   while(1){
   	HAL_Delay(10);
     printf("gyro is %d \n", readZGYRO());
@@ -218,12 +251,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  IR_start();
+  xQueue = xQueueCreate(4, 10);
+  if(xQueue != NULL)	printf("Queue was created\n");
+
   MotionObserver motion_observer;
   motion_observer.init();
-  motion_observer.createTask((const char*)"MOTION", 2048, 2);
+  //motion_observer.createTask((const char*)"MOTION", 2048, 2);
   //motion_observer.create_task();
-  xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-  xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
+  IRSensor ir_sensor;
+  ir_sensor.createTask((const char*)"IR TASK", 200, 1);
+  //xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   vTaskStartScheduler();
   while (1)
   {
@@ -704,7 +743,7 @@ static void MX_TIM11_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 30;
+  sConfigOC.Pulse = 50;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim11, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
