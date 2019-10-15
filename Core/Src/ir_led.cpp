@@ -40,3 +40,33 @@ void IR_select(){
 	while(flag != true);
 	IR_stop();
 }
+void IRSensor::createTask(const char*name, const uint16_t& stack_size,
+		const UBaseType_t& task_priority){
+	xTaskCreate([](void* obj){
+		static_cast<IRSensor*>(obj)->task();},
+		name, stack_size, NULL, task_priority, NULL);
+}
+
+void IRSensor::task(){
+	portTickType xLastWakeTime;
+	const portTickType xFrequency = 1; // 100kHz
+	xLastWakeTime = xTaskGetTickCount();
+	uint32_t count = 0;
+	uint16_t left_ir_tmp = 0, right_ir_tmp = 0;
+	IRUnit po(left_ir_tmp, right_ir_tmp);
+	while(1){
+		count = (count + 1) % 100000;
+		left_ir_tmp = (g_ADCBuffer[0] > left_ir_tmp) ? g_ADCBuffer[0] : left_ir_tmp;
+		right_ir_tmp = (g_ADCBuffer[1] > right_ir_tmp) ? g_ADCBuffer[1] : right_ir_tmp;
+		if(count % 50 == 0){
+			if(count % 10000 == 0){
+				IRUnit send_unit(left_ir_tmp, right_ir_tmp);
+				xQueueSendToBack(IRSensorQueue, &send_unit, 0);
+			}
+			left_ir_tmp = 0;
+			right_ir_tmp = 0;
+		}
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
+
+}
