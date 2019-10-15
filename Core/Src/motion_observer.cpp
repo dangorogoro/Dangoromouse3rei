@@ -19,7 +19,7 @@ void MotionObserver::init(){
 }
 void MotionObserver::task(){
 	portTickType xLastWakeTime;
-	const portTickType xFrequency = 100;
+	const portTickType xFrequency = 10 * 1000;
 	xLastWakeTime = xTaskGetTickCount();
 	while(1){
 
