@@ -54,8 +54,9 @@ struct GyroData{
   volatile float x_gyro;
   volatile float y_gyro;
   volatile float z_gyro;
-	GyroData(float _x_accel = 0, float _y_accel = 0, float _z_accel = 0,
-					 float _x_gyro = 0, float _y_gyro = 0, float _z_gyro = 0) :
+  GyroData(){}
+	GyroData(float _x_accel, float _y_accel, float _z_accel,
+					 float _x_gyro, float _y_gyro, float _z_gyro) :
 						 x_accel(_x_accel),
 						 y_accel(_y_accel),
 						 z_accel(_z_accel),
@@ -91,7 +92,6 @@ struct GyroData{
 };
 class ICM20602{
 private:
-	GyroData offset_data;
 public:
 	ICM20602(){}
 	void initialSetting(){}

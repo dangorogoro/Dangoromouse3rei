@@ -1,5 +1,6 @@
 #include "spi.h"
 int16_t gyro_offset = GPIO_PIN_RESET;
+GyroData offset_data;
 
 void imuSetting(){
   spi_write_reg(ICM20602_PWR_MGMT_1, 0x80);
@@ -93,11 +94,14 @@ void ICM20602::setCalibration(){
 		get_all_data(tmpData);
 		sumData = sumData + tmpData;
 	}
-	offset_data = sumData / 1000.0;
+	sumData = sumData / 1000.0;
+ 	offset_data = GyroData(sumData.x_accel, sumData.y_accel, sumData.z_accel,
+			sumData.x_gyro, sumData.y_gyro, sumData.z_gyro);
+ 	printf("z is%f\n", sumData.z_gyro);
 }
 GyroData ICM20602::update(){
 	GyroData get_data;
 	get_all_data(get_data);
-  return get_data * 1000.0;// - offset_data;
+  return get_data - offset_data;
 }
 
