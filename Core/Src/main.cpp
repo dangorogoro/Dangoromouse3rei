@@ -129,8 +129,8 @@ void vLEDFlashTask( void *pvParameters ){
   	xQueueSendToBack(xQueue, &i, 0);
   }
   while(1){
-  	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
-  	HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_0);
+  	//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+  	//HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_0);
 		//xQueueSendToBack(IRSensorQueue, (void*) &po, 0);
   	vTaskDelayUntil(&xLastWakeTime,xFrequency);
   }
@@ -200,13 +200,15 @@ int main(void)
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
   HAL_Delay(500);
 
+
+
   /*
-  IR_start();
+
   while(1){
+  	ToF_sampling_test();
   	printf("%d %d\n", g_ADCBuffer[0], g_ADCBuffer[1]);
   			HAL_Delay(10);
   }
-  /*
   ICM20602 po;
   Encoder enc;
   while(1){
@@ -251,18 +253,18 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  IR_start();
   xQueue = xQueueCreate(4, 10);
   if(xQueue != NULL)	printf("Queue was created\n");
 
   MotionObserver motion_observer;
   motion_observer.init();
-  //motion_observer.createTask((const char*)"MOTION", 2048, 2);
+  motion_observer.createTask((const char*)"MOTION", 2048, 2);
   //motion_observer.create_task();
   IRSensor ir_sensor;
-  ir_sensor.createTask((const char*)"IR TASK", 200, 1);
-  //xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-  xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  //ir_sensor.create_task();
+  //ir_sensor.createTask((const char*)"IR TASK", 200, 1);
+  xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  //xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   vTaskStartScheduler();
   while (1)
   {
@@ -628,7 +630,7 @@ static void MX_TIM5_Init(void)
 
   /* USER CODE END TIM5_Init 1 */
   htim5.Instance = TIM5;
-  htim5.Init.Prescaler = 10;
+  htim5.Init.Prescaler = 0;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim5.Init.Period = 500;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

@@ -40,16 +40,17 @@ void IR_select(){
 	while(flag != true);
 	IR_stop();
 }
+
 void IRSensor::createTask(const char*name, const uint16_t& stack_size,
 		const UBaseType_t& task_priority){
 	xTaskCreate([](void* obj){
 		static_cast<IRSensor*>(obj)->task();},
 		name, stack_size, NULL, task_priority, NULL);
 }
-
 void IRSensor::task(){
 	portTickType xLastWakeTime;
-	const portTickType xFrequency = 1; // 100kHz
+	const uint32_t calledFrequency = 100 * 1000;
+	const portTickType xFrequency = configTICK_RATE_HZ; // 100kHz
 	xLastWakeTime = xTaskGetTickCount();
 	uint32_t count = 0;
 	uint16_t left_ir_tmp = 0, right_ir_tmp = 0;
