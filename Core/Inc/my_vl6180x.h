@@ -11,7 +11,6 @@
 #include "vl6180x_api.h"
 #define i2c_bus      (&hi2c3)
 #define def_i2c_time_out 1000
-
 #define SET_VL6180X_LEFT_GPIO0(status)   HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, status);
 #define SET_VL6180X_FRONT_GPIO0(status)   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, status);
 #define SET_VL6180X_RIGHT_GPIO0(status)   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, status);
