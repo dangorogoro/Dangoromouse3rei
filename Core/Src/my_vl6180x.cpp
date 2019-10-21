@@ -7,6 +7,7 @@
 
 #include "my_vl6180x.h"
 #if VL6180x_SINGLE_DEVICE_DRIVER
+/*
 int VL6180x_I2CWrite(VL6180xDev_t addr, uint8_t *buff, uint8_t len) {
     int status;
     status = HAL_I2C_Master_Transmit(i2c_bus, addr, buff, len, def_i2c_time_out);
@@ -24,7 +25,7 @@ int VL6180x_I2CRead(VL6180xDev_t addr, uint8_t *buff, uint8_t len) {
     }
 
     return status;
-}
+}*/
 #else
 int VL6180x_I2CWrite(VL6180xDev_t dev, uint8_t *buff, uint8_t len) {
     int status;
