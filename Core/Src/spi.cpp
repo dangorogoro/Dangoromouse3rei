@@ -72,19 +72,19 @@ void get_all_data(GyroData& data){
   uint8_t address;
   address = ICM20602_ACCEL_XOUT_H | 0x80;
   spi_read_reg(address, buf, 14);
-  data.x_accel = (int16_t)(((uint16_t)buf[0] << 8)
-  		| ((uint16_t)buf[1])) / ACCEL_FACTOR;
-  data.y_accel = (int16_t)(((uint16_t)buf[2] << 8)
+  data.x_accel = (int16_t)(((uint16_t)buf[2] << 8)
   		| ((uint16_t)buf[3])) / ACCEL_FACTOR;
+  data.y_accel = -(int16_t)(((uint16_t)buf[0] << 8)
+  		| ((uint16_t)buf[1])) / ACCEL_FACTOR;
   data.z_accel = (int16_t)(((uint16_t)buf[4] << 8)
   		| ((uint16_t)buf[5])) / ACCEL_FACTOR;
 
-  data.x_gyro = (int16_t)(((uint16_t)buf[8] << 8)
-  		| ((uint16_t)buf[9])) / GYRO_FACTOR;
-  data.y_gyro = (int16_t)(((uint16_t)buf[10] << 8)
-  		| ((uint16_t)buf[11])) / GYRO_FACTOR;
+  data.x_gyro = (int16_t)(((uint16_t)buf[10] << 8)
+  		| ((uint16_t)buf[11])) / GYRO_FACTOR / 180.f * PI;
+  data.y_gyro = (int16_t)(((uint16_t)buf[8] << 8)
+  		| ((uint16_t)buf[9])) / GYRO_FACTOR / 180.f * PI;
   data.z_gyro = (int16_t)(((uint16_t)buf[12] << 8)
-  		| ((uint16_t)buf[13])) / GYRO_FACTOR;
+  		| ((uint16_t)buf[13])) / GYRO_FACTOR / 180.f * PI;
 
 }
 void ICM20602::setCalibration(){
