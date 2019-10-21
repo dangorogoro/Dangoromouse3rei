@@ -13,4 +13,13 @@ void set_right_motor_pulse(int16_t right_pulse);
 void set_motor_pulse(int16_t left_pulse, int16_t right_pulse);
 void start_motor();
 void stop_motor();
+class MotorControl{
+private:
+public:
+	MotorControl(){}
+	void pidInit();
+	void pidControlUpdate(const float& left_diff,
+			const float& right_diff);
+	void pidReset();
+};
 #endif /* INC_MOTOR_H_ */

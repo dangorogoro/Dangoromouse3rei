@@ -5,7 +5,7 @@
  *      Author: dango
  */
 #include "motor.h"
-
+#include "motion_observer.h"
 arm_pid_instance_f32 left_motor_pid;
 arm_pid_instance_f32 right_motor_pid;
 
@@ -72,7 +72,8 @@ void stop_motor(){
 	HAL_TIM_PWM_Stop(&htim5, TIM_CHANNEL_4);
 	set_motor_pulse(0,0);
 }
-void motor_control_init(){
+
+void MotorControl::pidInit(){
 	left_motor_pid.Kp = 0.5;
 	left_motor_pid.Ki = 0.0;
 	left_motor_pid.Kd = 0.0;
@@ -81,14 +82,26 @@ void motor_control_init(){
 	right_motor_pid.Kd = 0.0;
 	arm_pid_init_f32(&left_motor_pid, 1);
 	arm_pid_init_f32(&right_motor_pid, 1);
-	TIM3->CNT = 0;
-	TIM4->CNT = 0;
+}
+void MotorControl::pidControlUpdate(const float& v_diff, const float& w_diff){
+	float left_diff = v_diff - w_diff / 2 * ROBOT_WIDTH;
+	float right_diff = v_diff + w_diff / 2 * ROBOT_WIDTH;
+	arm_pid_f32(&left_motor_pid, left_diff);
+	arm_pid_f32(&right_motor_pid, right_diff);
+	int16_t left_u = (int16_t)((left_motor_pid.state[0] / 4.2) * (float)htim5.Init.Period);
+	int16_t right_u = (int16_t)((right_motor_pid.state[0] / 4.2) * (float)htim5.Init.Period);
+	set_motor_pulse(left_u, right_u);
+}
+void MotorControl::pidReset(){
+	arm_pid_reset_f32(&left_motor_pid);
+	arm_pid_reset_f32(&right_motor_pid);
+	stop_motor();
 }
 #if 0
 void motor_task(float32_t left_target_velocity, float32_t right_target_velocity){
 	if(robotFlag.encoder == true){
 		float32_t left_velocity = TIM4->CNT / 1024 * CIRC_LEN * 1000;
-		float32_t right_velocity = TIM3->CNT / 1024 * CIRC_LEN * 1000;
+		float32_t rerrorerroright_velocity = TIM3->CNT / 1024 * CIRC_LEN * 1000;
 		TIM3->CNT = 0;
 		TIM4->CNT = 0;
 		float32_t left_error = left_target_velocity - left_velocity;
