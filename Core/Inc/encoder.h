@@ -11,14 +11,12 @@
 #include "config.h"
 constexpr float CIRCUMFERENCE = 13.3 * PI;
 constexpr float ENCODER_RESOLUTION = 1024.0;
-
+constexpr float ROBOT_WIDTH = 32.0f;
 struct EncoderUnit{
 	float left_encoder_velocity;
 	float right_encoder_velocity;
-	/*
 	EncoderUnit(float _left = 0.0, float _right = 0.0) :
 			left_encoder_velocity(_left), right_encoder_velocity(_right) {}
-	*/
 	inline void setValue(const float& _left, const float& _right){
 		left_encoder_velocity = _left;
 		right_encoder_velocity = _right;
