@@ -48,12 +48,12 @@ void imu_calibration();
 
 
 struct GyroData{
-  volatile float x_accel;
-  volatile float y_accel;
-  volatile float z_accel;
-  volatile float x_gyro;
-  volatile float y_gyro;
-  volatile float z_gyro;
+	float x_accel;
+  float y_accel;
+  float z_accel;
+  float x_gyro;
+  float y_gyro;
+  float z_gyro;
   GyroData(){}
 	GyroData(float _x_accel, float _y_accel, float _z_accel,
 					 float _x_gyro, float _y_gyro, float _z_gyro) :
