@@ -30,8 +30,8 @@ struct RobotState{
   		y +=  state_input.v / state_input.w * cos_theta - state_input.v / state_input.w * cos_delta_theta;
   	}
   	else{
-  		x += state_input.v * cos_theta;
-  		y += state_input.v * sin_theta;
+  		x += state_input.v * cos_theta * time_step;
+  		y += state_input.v * sin_theta * time_step;
   	}
   	theta += state_input.w * time_step;
   }
@@ -52,12 +52,11 @@ public:
 	void init();
 	void createTask(const char* name, const uint16_t& stack_size, const UBaseType_t& task_priority);
 	void task();
-
 	void deleteTask(){
 		vTaskDelete(handle);
 	}
-
 };
 
+float get_fusioned_velocity(const float& raw_velocity, const float& raw_accel);
 
 #endif /* INC_MOTION_OBSERVER_H_ */
