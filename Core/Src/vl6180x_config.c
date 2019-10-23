@@ -7,7 +7,7 @@
 #include "vl6180x_api.h"
 #include "config.h"
 #define i2c_bus      (&hi2c3)
-#define def_i2c_time_out 1000
+#define def_i2c_time_out 10
 int VL6180x_I2CWrite(VL6180xDev_t addr, uint8_t *buff, uint8_t len) {
   int status;
   status = HAL_I2C_Master_Transmit(i2c_bus, addr, buff, len, def_i2c_time_out);
