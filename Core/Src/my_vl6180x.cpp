@@ -48,6 +48,35 @@ int VL6180x_I2CRead(VL6180xDev_t dev, uint8_t *buff, uint8_t len) {
 
 #endif
 
+
+bool robot_start(){
+  VL6180xDev_t myDev = 0x52;
+  VL6180x_RangeData_t Range;
+  bool flag = false;
+    SET_VL6180X_LEFT_GPIO0(GPIO_PIN_SET);
+    HAL_Delay(1);
+    VL6180x_InitData(myDev);
+    VL6180x_Prepare(myDev);
+  	VL6180x_RangePollMeasurement(myDev, &Range);
+    SET_VL6180X_LEFT_GPIO0(GPIO_PIN_RESET);
+    HAL_Delay(1);
+    if (Range.errorStatus == 0 && Range.range_mm >= 25 && Range.range_mm <= 35)
+    	flag = true;
+    else return 0;
+
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_SET);
+    HAL_Delay(1);
+    VL6180x_InitData(myDev);
+    VL6180x_Prepare(myDev);
+  	VL6180x_RangePollMeasurement(myDev, &Range);
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_RESET);
+    HAL_Delay(1);
+    if (Range.errorStatus == 0 && Range.range_mm >= 25 && Range.range_mm <= 35)
+    	flag = true;
+    else	return 0;
+    return flag;
+}
+
 void ToF_sampling_test(){
   VL6180xDev_t myDev = 0x52;
   VL6180x_RangeData_t Range;
@@ -111,7 +140,6 @@ void ToF_sampling_test(){
     }
     else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
   }
-
 }
 
 void Sample_SimpleRanging(void) {
@@ -201,3 +229,65 @@ void Sample_SimpleAls(void) {
     }
 #endif
 }
+void VL6180XController::createTask(const char*name, const uint16_t& stack_size,
+		const UBaseType_t& task_priority){
+	xTaskCreate([](void* obj){
+		static_cast<VL6180XController*>(obj)->task();},
+		name, stack_size, NULL, task_priority, NULL);
+}
+void VL6180XController::task(){
+	portTickType xLastWakeTime;
+	const uint32_t calledFrequency = 100;
+	const portTickType xFrequency = configTICK_RATE_HZ / calledFrequency;
+	const uint32_t delayFrequency = 1000;
+	xLastWakeTime = xTaskGetTickCount();
+	VL6180XData vl6180x_manage;
+	VL6180x_RangeData_t Range;
+	VL6180xDev_t myDev = 0x52;
+	while(1){
+    SET_VL6180X_FRONT_GPIO0(GPIO_PIN_SET);
+    vTaskDelay(configTICK_RATE_HZ / delayFrequency);
+    VL6180x_InitData(myDev);
+    VL6180x_Prepare(myDev);
+  	VL6180x_RangePollMeasurement(myDev, &Range);
+    SET_VL6180X_FRONT_GPIO0(GPIO_PIN_RESET);
+    vTaskDelay(configTICK_RATE_HZ / delayFrequency);
+    if (Range.errorStatus == 0 && Range.range_mm >= 70 && Range.range_mm <= 120){
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_RESET);
+    	printf("FRONT Vaule %d mm\n", (int)Range.range_mm);
+    }
+    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_SET);
+    vl6180x_manage.front_range = Range;
+
+    SET_VL6180X_LEFT_GPIO0(GPIO_PIN_SET);
+    vTaskDelay(configTICK_RATE_HZ / delayFrequency);
+    VL6180x_InitData(myDev);
+    VL6180x_Prepare(myDev);
+  	VL6180x_RangePollMeasurement(myDev, &Range);
+    SET_VL6180X_LEFT_GPIO0(GPIO_PIN_RESET);
+    vTaskDelay(configTICK_RATE_HZ / delayFrequency);
+    if (Range.errorStatus == 0 && Range.range_mm >= 25 && Range.range_mm <= 60){
+    	printf("LEFT Vaule %d mm\n", (int)Range.range_mm);
+    	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
+    }
+    else	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_SET);
+    vl6180x_manage.left_range = Range;
+
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_SET);
+    vTaskDelay(configTICK_RATE_HZ / delayFrequency);
+    VL6180x_InitData(myDev);
+    VL6180x_Prepare(myDev);
+  	VL6180x_RangePollMeasurement(myDev, &Range);
+    SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_RESET);
+    vTaskDelay(configTICK_RATE_HZ / delayFrequency);
+    if (Range.errorStatus == 0 && Range.range_mm >= 25 && Range.range_mm <= 60){
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+    	printf("RIGHT Vaule %d mm\n", (int)Range.range_mm);
+    }
+    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+    vl6180x_manage.right_range = Range;
+
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
+}
+
