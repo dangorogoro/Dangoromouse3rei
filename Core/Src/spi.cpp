@@ -83,7 +83,7 @@ void get_all_data(GyroData& data){
   		| ((uint16_t)buf[9])) / GYRO_FACTOR / 180.f * PI;
   data.y_gyro = (int16_t)(((uint16_t)buf[10] << 8)
   		| ((uint16_t)buf[11])) / GYRO_FACTOR / 180.f * PI;
-  data.z_gyro = -(int16_t)(((uint16_t)buf[12] << 8)
+  data.z_gyro = (int16_t)(((uint16_t)buf[12] << 8)
   		| ((uint16_t)buf[13])) / GYRO_FACTOR / 180.f * PI;
 
 }

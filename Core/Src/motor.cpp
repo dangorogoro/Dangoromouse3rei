@@ -22,16 +22,16 @@ void set_left_motor_pulse(int16_t left_pulse){
 	if(left_pulse > 0){
 		if(left_pulse >= max_pulse)	left_pulse = max_pulse;
 		sConfigOC.Pulse = max_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_1);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_3);
 		sConfigOC.Pulse = max_pulse - left_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_2);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_4);
 	}
 	else{
 		if(left_pulse <= -max_pulse)	left_pulse = -max_pulse;
 		sConfigOC.Pulse = max_pulse + left_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_1);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_3);
 		sConfigOC.Pulse = max_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_2);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_4);
 	}
 }
 void set_right_motor_pulse(int16_t right_pulse){
@@ -43,16 +43,16 @@ void set_right_motor_pulse(int16_t right_pulse){
 	if(right_pulse > 0){
 		if(right_pulse >= max_pulse)	right_pulse = max_pulse;
 		sConfigOC.Pulse = max_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_3);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_1);
 		sConfigOC.Pulse = max_pulse - right_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_4);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_2);
 	}
 	else{
 		if(right_pulse <= -max_pulse)	right_pulse = -max_pulse;
 		sConfigOC.Pulse = max_pulse + right_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_3);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_1);
 		sConfigOC.Pulse = max_pulse;
-		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_4);
+		HAL_TIM_PWM_ConfigChannel(&htim5, &sConfigOC, TIM_CHANNEL_2);
 	}
 }
 void set_motor_pulse(int16_t left_pulse, int16_t right_pulse){
