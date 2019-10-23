@@ -6,6 +6,11 @@
  */
 #include "motion_observer.h"
 float target_velocity = 300.0;
+float target_w = 5;
+
+float search_velocity_accel = 5.0;
+
+float rad_accel = 0.4;
 
 float alpha = 0.65;
 float last_velocity = 0.0, present_velocity = 0.0;
@@ -35,14 +40,12 @@ void MotionObserver::task(){
 	const uint32_t calledFrequency = 1000;
 	const portTickType xFrequency = configTICK_RATE_HZ / calledFrequency;
 	xLastWakeTime = xTaskGetTickCount();
-	uint16_t count = 0;
 	bool flag = false;
 	RobotState robot_state;
 	MotionInput state_input;
 	float recent_target_velocity = 0.0;
-
+	float recent_target_w = 0.0;
 	while(1){
-		count = (count + 1) % 10000;
 		auto observed_gyro = imu.update();
 		auto observed_encoder = encoder.update();
 
@@ -55,21 +58,21 @@ void MotionObserver::task(){
 		state_input = MotionInput(v, w);
 		robot_state.update(state_input);
 
+		/*
+		/ount = (count + 1) % 10000;
 		if(count % 100 == 0){
-			MotionInput state_input;
-	printf("motion -> %f, %f \n", state_input.v, state_input.w);
+			printf("motion -> %f, %f \n", state_input.v, state_input.w);
 			printf("robot_state %f, %f, %f\n", robot_state.x, robot_state.y, robot_state.theta);
 		}
-
-		if(target_velocity > recent_target_velocity)	recent_target_velocity += 5.0;
-		if(robot_state.y > 180){
+		*/
+		//if(target_velocity > recent_target_velocity)	recent_target_velocity += 5.0;
+		if(target_w > recent_target_w) recent_target_w += rad_accel;
+		if(robot_state.theta > 2 * PI){
 			flag = true;
-	    HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
 			stop_motor();
 		}
 		else if(flag == false){
-			HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_SET);
-			motor_control.pidControlUpdate(recent_target_velocity - v, 0 - w);
+			motor_control.pidControlUpdate(recent_target_velocity - v, recent_target_w - w);
 		}
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
