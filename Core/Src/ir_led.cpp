@@ -5,6 +5,7 @@
  *      Author: dango
  */
 #include "ir_led.h"
+xQueueHandle IRSensorQueue = xQueueCreate(1, sizeof(IRUnit));
 
 void IR_start(){
 	HAL_TIM_PWM_Start(&htim11, TIM_CHANNEL_1);
@@ -50,7 +51,7 @@ void IRSensor::createTask(const char*name, const uint16_t& stack_size,
 void IRSensor::task(){
 	portTickType xLastWakeTime;
 	const uint32_t calledFrequency = 100 * 1000;
-	const portTickType xFrequency = configTICK_RATE_HZ; // 100kHz
+	const portTickType xFrequency = configTICK_RATE_HZ / calledFrequency; // 100kHz
 	xLastWakeTime = xTaskGetTickCount();
 	uint32_t count = 0;
 	uint16_t left_ir_tmp = 0, right_ir_tmp = 0;
