@@ -8,8 +8,14 @@
 #ifndef INC_MOTION_OBSERVER_H_
 #define INC_MOTION_OBSERVER_H_
 #include "spi.h"
-#include "main.h"
+#include "config.h"
 #include "encoder.h"
+#include "motor.h"
+constexpr float search_trans_velocity = 300.0;
+constexpr float search_trans_accel = 5.0;
+constexpr float search_rotate_velocity = 9.0;
+constexpr float search_rotate_accel = 0.5;
+
 struct MotionInput{
 	float v,w;
 	MotionInput(float _v = 0, float _w = 0) : v(_v), w(_w){}
@@ -23,8 +29,8 @@ struct RobotState{
   void update(const MotionInput& state_input, float time_step = 0.001f){
 		float sin_theta, cos_theta;
 		float sin_delta_theta, cos_delta_theta;
-		arm_sin_cos_f32(theta / PI * 180.0, &sin_theta, &cos_theta);
-		arm_sin_cos_f32((theta + state_input.w * time_step) / PI * 180.0, &sin_delta_theta, &cos_delta_theta);
+		arm_sin_cos_f32(std::fmod(theta / PI * 180.0, 360.0), &sin_theta, &cos_theta);
+		arm_sin_cos_f32(std::fmod((theta + state_input.w * time_step) / PI * 180.0, 360.0), &sin_delta_theta, &cos_delta_theta);
   	if(abs(state_input.w) > 0.001){
   		x += -state_input.v / state_input.w * sin_theta + state_input.v / state_input.w * sin_delta_theta;
   		y +=  state_input.v / state_input.w * cos_theta - state_input.v / state_input.w * cos_delta_theta;
