@@ -31,6 +31,18 @@
 #include "ir_led.h"
 #include "motor.h"
 #include "motion_observer.h"
+#include "robot_operator.h"
+
+#include <list>
+#include <vector>
+#include <unistd.h>
+#include "Parsue_Conf.h"
+#include "Maze.h"
+#include "MazeData.h"
+#include "Operation.h"
+#include "Agent.h"
+#include "solver_operator.h"
+#include <memory>
 extern "C" {
 #endif
 

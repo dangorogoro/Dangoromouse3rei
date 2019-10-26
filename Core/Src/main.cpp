@@ -82,7 +82,6 @@ uint32_t time_measure = 0;
 uint16_t left_IR_value = 0, right_IR_value = 0;
 uint16_t left_IR_tmp_value = 0, right_IR_tmp_value = 0;
 int16_t left_encoder, right_encoder;
-xQueueHandle IRSensorQueue = xQueueCreate(1, sizeof(IRUnit));
 QueueHandle_t xQueue;
 
 /* USER CODE END PFP */
@@ -97,13 +96,13 @@ void helloTask(void *pvParameters){
   xLastWakeTime=xTaskGetTickCount();
   while(1){
   	printf("hello\n");
-  	if(xQueueReceive(IRSensorQueue, &IRBuffer, ( TickType_t ) 10 ) ){
+  	if(xQueueReceive(IRSensorQueue, &IRBuffer, 0)){
     	printf("ir received \n");
-    	if(IRBuffer.left_ir_sensor > 2150)
+    	if(IRBuffer.left_ir_sensor > 2120)
       	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
     	else
       	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
-    	if(IRBuffer.right_ir_sensor > 2150)
+    	if(IRBuffer.right_ir_sensor > 2120)
       	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
     	else
       	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
@@ -189,6 +188,18 @@ int main(void)
   MX_TIM11_Init();
   MX_TIM2_Init();
 
+
+  while(false == robot_start()){
+  	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+  }
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*
+  while(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)){
+  	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15));
+  	HAL_Delay(100);
+  }
+  */
   /* Initialize interrupts */
   MX_NVIC_Init();
   imuSetting();
@@ -199,17 +210,18 @@ int main(void)
   HAL_Delay(500);
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
   HAL_Delay(500);
-
-
+  //Tof_continuous_sampling();
 
   /*
+  estimate_velocity();
+  while(1);
 
   while(1){
   	ToF_sampling_test();
   	printf("%d %d\n", g_ADCBuffer[0], g_ADCBuffer[1]);
   			HAL_Delay(10);
   }
-  ICM20602 po;
+  ICM20602 po;eabi
   Encoder enc;
   while(1){
   	HAL_Delay(100);
@@ -255,16 +267,52 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   xQueue = xQueueCreate(4, 10);
   if(xQueue != NULL)	printf("Queue was created\n");
+  /*
+  IndexVec po;
+  Direction dir;
+  //auto sampleData = alljapan2011x_exp_fin;
+  auto sampleData = taiwan2017f;
+  dir = sampleData[0 + 16 * (15 - 1)];
+  agent.update(IndexVec(0,1), dir.byte | 0xf0);
+  printf("============\n");
+  po = agent.getNextIndex();
+  dir = sampleData[po.x + 16 *(15 - po.y)];
+  printf("wall is 0x%x\n", dir.byte);
+  agent.update(po, dir.byte | 0xf0);
+  while(1){
+
+    po = agent.getNextIndex();
+    dir = sampleData[po.x + 16 *(15 - po.y)];
+    agent.update(po, dir.byte | 0xf0);
+    //usleep(10 * 10 * 1000);
+    HAL_Delay(10);
+    if(agent.getState() == Agent::FINISHED) break;
+  }
+  //node.startEdgeMap(0, GOAL, true);
+  node.startFastestMap(0, GOAL, true);
+  auto ans_path = node.getPathQueue(0, GOAL);
+  maze.printWall(ans_path);
+  maze.printWall(node);
+
+  while(1);
+  */
+
+  SolverOperator solver_operator;
+  solver_operator.createTask((const char*)"SOLVER", 1024 * 8, 1);
 
   MotionObserver motion_observer;
   motion_observer.init();
   motion_observer.createTask((const char*)"MOTION", 2048, 2);
-  //motion_observer.create_task();
-  IRSensor ir_sensor;
-  //ir_sensor.create_task();
+  RobotOperator robot_operator;
+  robot_operator.createTask((const char*)"OPERATOR", 1024, 3);
+  //IRSensor ir_sensor;
   //ir_sensor.createTask((const char*)"IR TASK", 200, 1);
-  xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+  VL6180XController vl6180x_control;
+  vl6180x_control.createTask((const char*)"VL6180", 256, 1);
+  //xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   //xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  //IR_start();
   vTaskStartScheduler();
   while (1)
   {
