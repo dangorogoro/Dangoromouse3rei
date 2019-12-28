@@ -108,6 +108,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/VL6180X/platform/cci-i2c}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/VL6180X/platform/template}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/FreeRTOS/Inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/MazeParsue}&quot;"/>
 								</option>
 								<option id="com.atollic.truestudio.gpp.symbols.defined.1619552487" name="Defined symbols" superClass="com.atollic.truestudio.gpp.symbols.defined" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=&quot;__attribute__((weak))&quot;"/>
@@ -164,6 +165,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="FreeRTOS/Src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="MazeParsue"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="SEGGER"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="VL6180X/core/src"/>
