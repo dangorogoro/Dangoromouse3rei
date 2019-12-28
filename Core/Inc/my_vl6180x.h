@@ -13,7 +13,7 @@
 #define SET_VL6180X_LEFT_GPIO0(status)   HAL_GPIO_WritePin(GPIOH, GPIO_PIN_1, status);
 #define SET_VL6180X_FRONT_GPIO0(status)   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_5, status);
 #define SET_VL6180X_RIGHT_GPIO0(status)   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, status);
-bool robot_start();
+bool robot_start(uint8_t& button_select);
 void Tof_continuous_sampling();
 void ToF_sampling_test();
 void Sample_SimpleRanging();
