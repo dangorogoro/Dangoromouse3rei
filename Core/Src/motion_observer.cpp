@@ -16,11 +16,9 @@ float last_sum_accel = 0.0, sum_accel = 0.0;
 xQueueHandle FixedRobotStateQueue = xQueueCreate(1, sizeof(RobotState));
 
 float get_fusioned_velocity(const float& raw_velocity, const float& raw_accel){
-	last_sum_accel = sum_accel;
-	last_velocity = present_velocity;
-	sum_accel += raw_accel * 1000.0 / 1000.0;
-	present_velocity = last_velocity * alpha + (alpha * sum_accel - alpha * last_sum_accel)
-			+ (1 - alpha) * raw_velocity;
+	present_velocity = alpha * (last_velocity + raw_accel) + (1 - alpha) * raw_velocity;
+	//present_velocity = last_velocity * alpha + (alpha * sum_accel - alpha * last_sum_accel)
+	//		+ (1 - alpha) * raw_velocity;
 	return present_velocity;
 }
 
