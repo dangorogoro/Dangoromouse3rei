@@ -11,6 +11,7 @@
 xQueueHandle TargetInputQueue = xQueueCreate(1, sizeof(MotionInput));
 xQueueHandle RobotStateQueue = xQueueCreate(1, sizeof(RobotState));
 xQueueHandle VL6180XDataQueue = xQueueCreate(1, sizeof(VL6180XData));
+xQueueHandle JudgeWallQueue = xQueueCreate(1, sizeof(VL6180XData));
 void RobotOperator::createTask(const char*name, const uint16_t& stack_size,
 		const UBaseType_t& task_priority){
 	xTaskCreate([](void* obj){
@@ -33,6 +34,7 @@ void RobotOperator::task(void){
 	int16_t turn_direction = 1;
 	MotionInput target_input;
 	bool operation_receive_flag = true;
+	bool state_fixed_flag = true;
 	while(1){
 		RobotState receive_robot_state;
 		count = (count + 1) % 10000;
@@ -44,13 +46,20 @@ void RobotOperator::task(void){
 		if(xQueueReceive(OperationInfoQueue, &latestOperationInfo, 0)){
 			operation_receive_flag = true;
 			turn_state = false;
+			state_fixed_flag = true;
 		}
 		if(operation_receive_flag == true && run_search_operation(receive_vl6180x_data, receive_robot_state, latestOperationInfo, target_input, turn_direction, turn_state)){
-			Direction wall_info = get_wall_from_ToF(receive_vl6180x_data, latestOperationInfo.next_dir);
-			xQueueSendToBack(WallInfoQueue, &wall_info, 0);
-			operation_receive_flag = false;
-			if(fix_robot_state(receive_vl6180x_data, latestOperationInfo, receive_robot_state)){
+			if(state_fixed_flag == true && fix_robot_state(receive_vl6180x_data, latestOperationInfo, receive_robot_state)){
 				xQueueSendToBack(FixedRobotStateQueue, &receive_robot_state, 0);
+				state_fixed_flag = false;
+			}
+			else{
+				Direction wall_info = get_wall_from_ToF(receive_vl6180x_data, latestOperationInfo.next_dir);
+				xQueueSendToBack(WallInfoQueue, &wall_info, 0);
+				//VL6180XData data;
+				//xQueueReceive(JudgeWallQueue, &data, 0);
+				//Direction wall_info = get_wall_from_ToF(data, latestOperationInfo.next_dir);
+				operation_receive_flag = false;
 			}
 		}
 		if(operation_receive_flag == false) target_input = MotionInput(0,0);
@@ -68,13 +77,13 @@ Direction get_wall_from_ToF(const VL6180XData& vl6180x_data, const Direction& di
 	Direction wall_info;
 	bool front_wall, left_wall, right_wall;
 	auto Range = vl6180x_data.front_range;
-  front_wall = (Range.errorStatus == 0 && Range.range_mm >= 10 && Range.range_mm <= 90)
+  front_wall = (Range.errorStatus == 0 && Range.range_mm >= 10 && Range.range_mm <= 80)
 		? true : false;
   Range = vl6180x_data.left_range;
-  left_wall = (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 70)
+  left_wall = (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 60)
 		? true : false;
   Range = vl6180x_data.right_range;
-  right_wall = (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 70)
+  right_wall = (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 60)
   		? true : false;
 	if(dir == NORTH){
 		wall_info |= (front_wall) ? NORTH : 0;
@@ -105,7 +114,7 @@ bool fix_robot_state(const VL6180XData& vl6180x_data, const OperationInfo& op_in
 			nextIndex.y * MAZE_1BLOCK_LENGTH, 0);
 
 	auto Range = vl6180x_data.front_range;
-  if(Range.errorStatus == 0 && Range.range_mm >= 10 && Range.range_mm <= 100){
+  if(Range.errorStatus == 0 && Range.range_mm >= 10 && Range.range_mm <= 50){
   	auto center_value = 35.0;
   	if(nextDirection == NORTH){
   		presentRobotState.y = targetState.y + center_value - Range.range_mm;
@@ -135,12 +144,17 @@ bool run_search_operation(const VL6180XData& vl6180x_data, RobotState& presentRo
 	if(latestOP.op == Operation::FORWARD || turn_state == true){
 		RobotState targetState(nextIndex.x * MAZE_1BLOCK_LENGTH, nextIndex.y * MAZE_1BLOCK_LENGTH, 0);
 		int32_t length_judge = (nextDirection == NORTH || nextDirection == EAST) ? 1 : -1;
+		float side_diff = 0.0;
 		float compare_length;
 		if(nextDirection == NORTH || nextDirection == SOUTH){
 			compare_length = targetState.y - presentRobotState.y;
+			side_diff = targetState.x - presentRobotState.x;
+			side_diff = (nextDirection == NORTH) ? -side_diff : side_diff;
 		}
 		else{
 			compare_length = targetState.x - presentRobotState.x;
+			side_diff = targetState.y - presentRobotState.y;
+			side_diff = (nextDirection == EAST) ? side_diff : -side_diff;
 		}
 
 		if((compare_length * length_judge) > search_trans_velocity * search_trans_velocity / search_trans_accel / 1000.0){
@@ -150,7 +164,7 @@ bool run_search_operation(const VL6180XData& vl6180x_data, RobotState& presentRo
 		else{
 			targetInput.v = (targetInput.v > 0.0) ?
 					targetInput.v - search_trans_accel : 0.0;
-			if(targetInput.v < search_rotate_accel)	ret_flag = true;
+			if(targetInput.v < search_trans_accel)	ret_flag = true;
 		}
 		auto target_theta = turn_direction * PI / 2.0;
 		targetInput.w = 0 + (target_theta - presentRobotState.theta) * 10;
@@ -193,7 +207,7 @@ bool run_search_operation(const VL6180XData& vl6180x_data, RobotState& presentRo
 }
 void check_vl6180x(const VL6180XData& data){
 	auto Range = data.front_range;
-  if (Range.errorStatus == 0 && Range.range_mm >= 70 && Range.range_mm <= 120){
+  if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 80){
   	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_RESET);
   	printf("FRONT Vaule %d mm\n", (int)Range.range_mm);
   }

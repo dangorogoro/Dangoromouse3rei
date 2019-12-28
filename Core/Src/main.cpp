@@ -189,11 +189,13 @@ int main(void)
   MX_TIM2_Init();
 
 
-  while(false == robot_start()){
+  uint8_t button_counter = 0;
+  while(false == robot_start(button_counter)){
   	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
   }
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
+	if(button_counter >= 1)	read_mazedata(maze);
   /*
   while(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)){
   	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15));
@@ -210,6 +212,14 @@ int main(void)
   HAL_Delay(500);
   HAL_ADC_Start_DMA(&hadc1, (uint32_t *)g_ADCBuffer, ADC_BUFFER_LENGTH);//DMA start
   HAL_Delay(500);
+  printf("battery voltage %f\n", g_ADCBuffer[2] / 4096.0 * 3.0 * 1.55);
+  HAL_Delay(500);
+
+  maze.printWall();
+  /*
+  maze.updateWall(IndexVec(0,1), NORTH);
+  write_mazedata(maze);
+  */
   //Tof_continuous_sampling();
 
   /*
@@ -302,14 +312,14 @@ int main(void)
 
   MotionObserver motion_observer;
   motion_observer.init();
-  motion_observer.createTask((const char*)"MOTION", 2048, 2);
+  motion_observer.createTask((const char*)"MOTION", 2048, 3);
   RobotOperator robot_operator;
-  robot_operator.createTask((const char*)"OPERATOR", 1024, 3);
+  robot_operator.createTask((const char*)"OPERATOR", 1024, 2);
   //IRSensor ir_sensor;
   //ir_sensor.createTask((const char*)"IR TASK", 200, 1);
-
   VL6180XController vl6180x_control;
   vl6180x_control.createTask((const char*)"VL6180", 256, 1);
+
   //xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   //xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   //IR_start();
