@@ -50,9 +50,16 @@ int VL6180x_I2CRead(VL6180xDev_t dev, uint8_t *buff, uint8_t len) {
 #endif
 
 
-bool robot_start(){
+bool robot_start(uint8_t &button_counter){
   VL6180xDev_t myDev = 0x52;
   VL6180x_RangeData_t Range;
+  if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15)){
+  	while(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15));
+  	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
+  	HAL_Delay(100);
+  	button_counter++;
+  }
+
   bool flag = false;
     SET_VL6180X_LEFT_GPIO0(GPIO_PIN_SET);
     HAL_Delay(1);
@@ -308,8 +315,6 @@ void set_continuous_mode(uint8_t targetDev){
 
   theVL6180xDev = targetDev;
   VL6180x_InitData(theVL6180xDev);
-  VL6180x_Prepare(theVL6180xDev);
-
   VL6180x_FilterSetState(theVL6180xDev, 0); //disable filering as not effective in continuous mode
 
   VL6180x_Prepare(theVL6180xDev);     // default vl6180x init
@@ -318,17 +323,16 @@ void set_continuous_mode(uint8_t targetDev){
 
   // if slow reaction is enough then set a high time like 100 ms (up to 2550 msec)
   // if fastest reaction is required then set 0  that will set minimal possible
-  VL6180x_RangeSetInterMeasPeriod(theVL6180xDev, 10);
+  VL6180x_RangeSetInterMeasPeriod(theVL6180xDev, 100);
   // set vl6180x gpio1 pin to range interrupt output with high polarity (rising edge)
   //VL6180x_SetupGPIO1(theVL6180xDev, GPIOx_SELECT_GPIO_INTERRUPT_OUTPUT, INTR_POL_HIGH);
   // set range interrupt reporting to low threshold
 
   VL6180x_RangeConfigInterrupt(theVL6180xDev, CONFIG_GPIO_INTERRUPT_LEVEL_LOW);
   // we don't care of high threshold as we don't use it , group hold is managed externaly
-  VL6180x_RangeSetThresholds(theVL6180xDev, 0, 100, 0);
+  VL6180x_RangeSetThresholds(theVL6180xDev, 20, 100, 0);
   VL6180x_ClearAllInterrupt(theVL6180xDev);
   VL6180x_RangeStartContinuousMode(theVL6180xDev);
-
 }
 void VL6180XController::init(){
   SET_VL6180X_LEFT_GPIO0(GPIO_PIN_RESET);
@@ -352,9 +356,7 @@ void VL6180XController::init(){
   SET_VL6180X_RIGHT_GPIO0(GPIO_PIN_SET);
   */
   //SET_VL6180X_LEFT_GPIO0(GPIO_PIN_SET);
-
 }
-
 void VL6180XController::task(){
 	portTickType xLastWakeTime;
 	const uint32_t calledFrequency = 100;
@@ -362,40 +364,44 @@ void VL6180XController::task(){
 	xLastWakeTime = xTaskGetTickCount();
 	while(1){
 		VL6180XData vl6180x_manage;
-		VL6180x_RangeData_t Range;
 
-    VL6180x_RangeGetMeasurement(FRONT_VL6180X_ADDRESS, &Range);
-    if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 120){
+    VL6180x_RangeGetMeasurement(FRONT_VL6180X_ADDRESS, &vl6180x_manage.front_range);
+    /*
+    if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 90){
     	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_RESET);
     	printf("FRONT Vaule %d mm\n", (int)Range.range_mm);
     }
     else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_SET);
+    */
   	VL6180x_ClearAllInterrupt(FRONT_VL6180X_ADDRESS);
-  	vl6180x_manage.front_range = Range;
 
-    VL6180x_RangeGetMeasurement(LEFT_VL6180X_ADDRESS, &Range);
+    VL6180x_RangeGetMeasurement(LEFT_VL6180X_ADDRESS, &vl6180x_manage.left_range);
+    /*
     if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 70){
     	printf("LEFT Vaule %d mm\n", (int)Range.range_mm);
     	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
     }
     else	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_SET);
+    */
   	VL6180x_ClearAllInterrupt(LEFT_VL6180X_ADDRESS);
-    vl6180x_manage.left_range = Range;
 
-    VL6180x_RangeGetMeasurement(RIGHT_VL6180X_ADDRESS, &Range);
+    VL6180x_RangeGetMeasurement(RIGHT_VL6180X_ADDRESS, &vl6180x_manage.right_range);
+    /*
     if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 70){
     	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
     	printf("RIGHT Vaule %d mm\n", (int)Range.range_mm);
     }
     else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+    */
   	VL6180x_ClearAllInterrupt(RIGHT_VL6180X_ADDRESS);
-    vl6180x_manage.right_range = Range;
 
   	xQueueSendToBack(VL6180XDataQueue, &vl6180x_manage, (TickType_t) 0);
+  	xQueueReset(JudgeWallQueue);
+  	xQueueSendToBack(JudgeWallQueue, &vl6180x_manage, 0);
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
 }
-/*
+#if 0
 void VL6180XController::task(){
 	portTickType xLastWakeTime;
 	const uint32_t calledFrequency = 100;
@@ -452,5 +458,40 @@ void VL6180XController::task(){
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
 }
-*/
+void VL6180XController::task(){
+	portTickType xLastWakeTime;
+	const uint32_t calledFrequency = 100;
+	const portTickType xFrequency = configTICK_RATE_HZ / calledFrequency;
+	xLastWakeTime = xTaskGetTickCount();
+	VL6180XData vl6180x_manage;
+	VL6180x_RangeData_t Range;
+	while(1){
+  	VL6180x_RangePollMeasurement(FRONT_VL6180X_ADDRESS, &Range);
+    if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 120){
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_RESET);
+    	printf("FRONT Vaule %d mm\n", (int)Range.range_mm);
+    }
+    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13 | GPIO_PIN_15, GPIO_PIN_SET);
+    vl6180x_manage.front_range = Range;
 
+  	VL6180x_RangePollMeasurement(LEFT_VL6180X_ADDRESS, &Range);
+    if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 70){
+    	printf("LEFT Vaule %d mm\n", (int)Range.range_mm);
+    	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_RESET);
+    }
+    else	HAL_GPIO_WritePin(GPIOH, GPIO_PIN_0, GPIO_PIN_SET);
+    vl6180x_manage.left_range = Range;
+
+  	VL6180x_RangePollMeasurement(RIGHT_VL6180X_ADDRESS, &Range);
+    if (Range.errorStatus == 0 && Range.range_mm >= 20 && Range.range_mm <= 70){
+    	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+    	printf("RIGHT Vaule %d mm\n", (int)Range.range_mm);
+    }
+    else	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+    vl6180x_manage.right_range = Range;
+
+		xQueueSendToBack(VL6180XDataQueue, &vl6180x_manage, (TickType_t) 0);
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+	}
+}
+#endif
