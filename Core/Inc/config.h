@@ -43,6 +43,7 @@ extern xQueueHandle VL6180XDataQueue;
 extern xQueueHandle OperationInfoQueue;
 extern xQueueHandle WallInfoQueue;
 extern xQueueHandle FixedRobotStateQueue;
+extern xQueueHandle JudgeWallQueue;
 extern uint8_t mode_select();
 extern void debug_task();
 
