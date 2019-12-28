@@ -42,6 +42,7 @@
 #include "Operation.h"
 #include "Agent.h"
 #include "solver_operator.h"
+#include "flash.h"
 #include <memory>
 extern "C" {
 #endif
