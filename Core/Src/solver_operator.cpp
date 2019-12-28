@@ -5,8 +5,7 @@
  *      Author: dango
  */
 #include "solver_operator.h"
-#include <memory>
-
+#include "motor.h"
 xQueueHandle OperationInfoQueue =  xQueueCreate(1, sizeof(OperationInfo));
 xQueueHandle WallInfoQueue = xQueueCreate(1, sizeof(Direction));
 const auto p_maze = std::make_unique<Maze>(WallData);
@@ -22,7 +21,7 @@ void SolverOperator::createTask(const char*name, const uint16_t& stack_size,
 		static_cast<SolverOperator*>(obj)->task();},
 		name, stack_size, NULL, task_priority, NULL);
 }
-/*
+
 uint8_t Data21[] = {
   2, 3, 6, 10, 10, 10, 2, 10, 10, 10, 10, 3, 6, 3, 6, 3,
   1, 5, 5, 6, 3, 6, 9, 6, 10, 10, 10, 9, 5, 5, 5, 5,
@@ -41,6 +40,8 @@ uint8_t Data21[] = {
   1, 5, 5, 5, 5, 14, 8, 10, 10, 10, 9, 12, 9, 12, 10, 3,
   9, 12, 9, 12, 8, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9
 };
+/*
+//Simulation
 void SolverOperator::task(){
 	portTickType xLastWakeTime;
 	const uint32_t calledFrequency = 100;
@@ -56,8 +57,12 @@ void SolverOperator::task(){
 	while(1){
 		if(flag == false){
 		dir = sampleData[po.x + 16 *(15 - po.y)];
+		auto start_ticks = HAL_GetTick();
 		agent.update(po, dir.byte | 0xf0);
+		auto end_ticks = HAL_GetTick();
 		po = agent.getNextIndex();
+	  printf("agent time %ld[ms]\n", end_ticks - start_ticks);
+
 		}
 		if(flag == false && agent.getState() == Agent::FINISHED){
 			//maze.printWall(ans_path);
@@ -75,22 +80,37 @@ void SolverOperator::task(){
 	}
 }
 */
-
 void SolverOperator::task(){
 	portTickType xLastWakeTime;
-	const uint32_t calledFrequency = 100;
+	const uint32_t calledFrequency = 1000;
 	const portTickType xFrequency = configTICK_RATE_HZ / calledFrequency;
 	xLastWakeTime = xTaskGetTickCount();
   OperationInfo latestOPInfo(Operation(Operation::FORWARD), NORTH, IndexVec(0,1));
 	xQueueSendToBack(OperationInfoQueue, &latestOPInfo, 0);
   Direction wallInfo;
+  Agent::State lastState = agent.getState();
+  agent.clearGoalVisible();
+  uint8_t save_count = 3;
 	while(1){
 		if(xQueueReceive(WallInfoQueue, &wallInfo, 0)){
 			agent.update(latestOPInfo.next_index, wallInfo.byte | 0xf0);
+			if(lastState == Agent::SEARCHING_NOT_GOAL && agent.getState() != Agent::SEARCHING_NOT_GOAL){
+				write_mazedata(maze);
+			}
+			else if(agent.getState() == Agent::FINISHED){
+				write_mazedata(maze);
+			}
 			latestOPInfo.next_dir = agent.getNextDirection();
 			latestOPInfo.next_index = agent.getNextIndex();
 			latestOPInfo.next_op = agent.getNextOperation();
+			if(latestOPInfo.next_op.op != Operation::FORWARD){
+				save_count = (save_count + 1) % 5;
+				if(save_count == 0){
+					write_mazedata(maze);
+				}
+			}
 			xQueueSendToBack(OperationInfoQueue, &latestOPInfo, 0);
+			lastState = agent.getState();
 		}
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}

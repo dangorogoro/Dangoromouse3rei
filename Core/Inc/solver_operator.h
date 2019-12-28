@@ -9,6 +9,8 @@
 #define INC_SOLVER_OPERATOR_H_
 #include "config.h"
 #include "Agent.h"
+#include "flash.h"
+#include <memory>
 
 struct OperationInfo{
 	Operation next_op;
@@ -25,5 +27,8 @@ public:
 	void createTask(const char* name, const uint16_t& stack_size, const UBaseType_t& task_priority);
 	void task();
 };
+extern Maze &maze;
+extern Node &node;
+extern Agent &agent;
 
 #endif /* INC_SOLVER_OPERATOR_H_ */
