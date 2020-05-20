@@ -86,24 +86,3 @@ void MotionObserver::task(){
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
 }
-
-/*  uint32_t data;
- *
-if(count >= 1000 && flag == false){
-	if(count >= 1300){
-		stop_motor();
-		flag = true;
-	}
-	else	set_motor_pulse(100, 100);
-	//printf("gyro %f %f\n",observed_gyro.x_accel, observed_gyro.z_gyro);
-	if(count % 10 == 0){
-		printf("%f, %f, %f, %f, %f\n",
-				o  uint32_t data;
-				bserved_encoder.left_encoder_velocity * calledFrequency,
-				observed_encoder.right_encoder_velocity * calledFrequency,
-				observed_gyro.x_accel,
-				observed_gyro.y_accel,
-				observed_gyro.z_gyro);
-	}
-}
-*/

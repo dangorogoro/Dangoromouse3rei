@@ -157,7 +157,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   /* USER CODE END 1 */
-  
+
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -308,8 +308,9 @@ int main(void)
   */
 
   SolverOperator solver_operator;
-  solver_operator.createTask((const char*)"SOLVER", 1024 * 8, 1);
+  solver_operator.createTask((const char*)"SOLVER", 1024 * 32, 1);
 
+  /*
   MotionObserver motion_observer;
   motion_observer.init();
   motion_observer.createTask((const char*)"MOTION", 2048, 3);
@@ -323,6 +324,7 @@ int main(void)
   //xTaskCreate( vLEDFlashTask, ( const char * ) "LED", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   //xTaskCreate( helloTask, ( const char * ) "hello", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   //IR_start();
+  */
   vTaskStartScheduler();
   while (1)
   {
