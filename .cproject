@@ -108,7 +108,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/VL6180X/platform/cci-i2c}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/VL6180X/platform/template}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/FreeRTOS/Inc}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/MazeParsue}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/MazeParsue/lib}&quot;"/>
 								</option>
 								<option id="com.atollic.truestudio.gpp.symbols.defined.1619552487" name="Defined symbols" superClass="com.atollic.truestudio.gpp.symbols.defined" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__weak=&quot;__attribute__((weak))&quot;"/>
@@ -141,7 +141,7 @@
 								<option id="com.atollic.truestudio.ldcc.libraries.searchpath.1273009461" name="Library search path" superClass="com.atollic.truestudio.ldcc.libraries.searchpath" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/3reiAlpha/ArchiveFile}&quot;"/>
 								</option>
-								<option id="com.atollic.truestudio.ldcc.misc.linkerflags.1948405714" name="Other options" superClass="com.atollic.truestudio.ldcc.misc.linkerflags" useByScannerDiscovery="false" value="-u _printf_float" valueType="string"/>
+								<option id="com.atollic.truestudio.ldcc.misc.linkerflags.1948405714" name="Other options" superClass="com.atollic.truestudio.ldcc.misc.linkerflags" useByScannerDiscovery="false" value="-u _printf_float -Xlinker --wrap=malloc -Xlinker --wrap=_malloc_r" valueType="string"/>
 								<option id="com.atollic.truestudio.common_options.target.fpu.829683864" name="Floating point" superClass="com.atollic.truestudio.common_options.target.fpu" useByScannerDiscovery="false" value="com.atollic.truestudio.common_options.target.fpu.hard" valueType="enumerated"/>
 								<option id="com.atollic.truestudio.common_options.target.fpucore.1297069055" name="FPU" superClass="com.atollic.truestudio.common_options.target.fpucore" useByScannerDiscovery="false" value="com.atollic.truestudio.common_options.target.fpucore.fpv4-sp-d16" valueType="enumerated"/>
 								<option id="com.atollic.truestudio.ldcc.misc.genmapfile.1344184349" name="Create map file" superClass="com.atollic.truestudio.ldcc.misc.genmapfile" useByScannerDiscovery="false"/>
@@ -165,7 +165,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="FreeRTOS/Src"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="MazeParsue"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="MazeParsue/lib"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Middlewares"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="SEGGER"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="VL6180X/core/src"/>
