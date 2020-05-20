@@ -99,7 +99,6 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
 
 return len;
 }
-#if 0
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void) file;  /* Not used, avoid warning */
@@ -112,8 +111,7 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
   SEGGER_RTT_Write(0, ptr, len);
 	return len;
 }
-#endif
-caddr_t _sbrk(int incr)
+__attribute__((weak)) caddr_t _sbrk(int incr)
 {
 	extern char end asm("end");
 	static char *heap_end;
