@@ -62,7 +62,7 @@ void SolverOperator::task(){
       auto end_ticks = HAL_GetTick();
       po = agent.getNextIndex();
       printf("agent time %ld[ms]\n", end_ticks - start_ticks);
-      maze.printWall();
+      //maze.printWall();
       vTaskDelay(10 * 1000);
     }
     if(flag == false && agent.getState() == Agent::FINISHED){
@@ -75,8 +75,6 @@ void SolverOperator::task(){
 
       flag = true;
     }
-
-    vTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
 }
 

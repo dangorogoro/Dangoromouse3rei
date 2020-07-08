@@ -32,7 +32,7 @@
 #include "motor.h"
 #include "motion_observer.h"
 #include "robot_operator.h"
-
+#include "buzzer.h"
 #include <list>
 #include <vector>
 #include <unistd.h>

@@ -53,17 +53,3 @@ uint8_t mode_select(){
   }
   return mode % 16;
 }
-void debug_task(){
-	if(robotFlag.debug == true){
-		SEGGER_RTT_printf(0,"left %d, right %d\n", TIM3->CNT, TIM4->CNT);
-		robotFlag.debug = false;
-	}
-}
-
-void vPrintString( const char *pcString ){
-	/* Write the string to stdout, using a critical section as a crude method of mutual exclusion. */
-	taskENTER_CRITICAL();
- printf( "%s", pcString );
- fflush( stdout );
- taskEXIT_CRITICAL();
-}

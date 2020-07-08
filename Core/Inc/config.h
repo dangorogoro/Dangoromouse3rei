@@ -61,5 +61,4 @@ extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim6;
 extern TIM_HandleTypeDef htim11;
 
-void vPrintString( const char *pcString );
 #endif /* INC_CONFIG_H_ */

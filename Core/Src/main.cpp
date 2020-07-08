@@ -216,6 +216,7 @@ int main(void)
   HAL_Delay(500);
 
   maze.printWall();
+
   /*
   maze.updateWall(IndexVec(0,1), NORTH);
   write_mazedata(maze);
@@ -308,8 +309,10 @@ int main(void)
   */
 
   SolverOperator solver_operator;
-  solver_operator.createTask((const char*)"SOLVER", 1024 * 32, 1);
+  solver_operator.createTask((const char*)"SOLVER", 1024 * 8, 1);
 
+  Buzzer buzzer;
+  buzzer.createTask((const char*)"BUZZER", 256, 2);
   /*
   MotionObserver motion_observer;
   motion_observer.init();
